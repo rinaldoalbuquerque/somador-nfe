@@ -218,9 +218,15 @@ const ExportService = {
         6: { cellWidth: 20 },
         7: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }
       },
+      footStyles: {
+        fillColor: [15, 43, 92],
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold'
+      },
       foot: [[
-        { content: 'TOTAL GERAL APURADO:', colSpan: 7, styles: { halign: 'right', fontStyle: 'bold' } },
-        { content: Utils.centsToBRL(totalIncluidoCents), styles: { halign: 'right', fontStyle: 'bold', textColor: [5, 150, 105] } }
+        { content: 'TOTAL GERAL APURADO:', colSpan: 7, styles: { halign: 'right', fontStyle: 'bold', textColor: [255, 255, 255] } },
+        { content: Utils.centsToBRL(totalIncluidoCents), styles: { halign: 'right', fontStyle: 'bold', textColor: [255, 255, 255], fontSize: 9.5 } }
       ]],
       margin: { left: 14, right: 14 }
     });
