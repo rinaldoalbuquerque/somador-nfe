@@ -1,0 +1,13 @@
+# Logs e temporários
+*.log
+*.tmp
+test_*.html
+test_*.ps1
+test_out.*
+
+# Capturas de tela locais (já mantidas nos artefatos)
+preview*.png
+
+# Arquivos locais de teste
+samples/real_sample.pdf
+samples/74*.pdf

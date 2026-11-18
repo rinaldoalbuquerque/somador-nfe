@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <Nfse versao="2.02">
+    <InfNfse>
+      <Numero>20260012</Numero>
+      <CodigoVerificacao>ABC123XYZ</CodigoVerificacao>
+      <DataEmissao>2026-10-16T09:00:00</DataEmissao>
+      <ValoresNfse>
+        <ValorServicos>1200.00</ValorServicos>
+        <ValorLiquidoNfse>1150.00</ValorLiquidoNfse>
+      </ValoresNfse>
+      <PrestadorServico>
+        <RazaoSocial>CONSULTORIA TRIBUTARIA E FINANCEIRA LTDA</RazaoSocial>
+      </PrestadorServico>
+    </InfNfse>
+  </Nfse>
+</CompNfse>

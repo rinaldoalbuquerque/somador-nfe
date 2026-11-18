@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cteProc xmlns="http://www.portalfiscal.inf.br/cte" versao="3.00">
+  <CTe xmlns="http://www.portalfiscal.inf.br/cte">
+    <infCte Id="CTe35230912345678000195570010000010011000010014" versao="3.00">
+      <ide>
+        <cUF>35</cUF>
+        <mod>57</mod>
+        <serie>1</serie>
+        <nCT>1001</nCT>
+        <dhEmi>2026-10-15T15:00:00-03:00</dhEmi>
+      </ide>
+      <vPrest>
+        <vTPrest>850.00</vTPrest>
+      </vPrest>
+    </infCte>
+  </CTe>
+</cteProc>

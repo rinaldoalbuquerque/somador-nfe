@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<procEventoNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
+  <evento versao="1.00">
+    <infEvento Id="ID1101113523099876543200018855001000002002100002002001">
+      <cOrgao>35</cOrgao>
+      <tpAmb>1</tpAmb>
+      <CNPJ>98765432000188</CNPJ>
+      <chNFe>35230998765432000188550010000020021000020020</chNFe>
+      <dhEvento>2026-10-18T14:20:00-03:00</dhEvento>
+      <tpEvento>110111</tpEvento>
+      <nSeqEvento>1</nSeqEvento>
+      <verEvento>1.00</verEvento>
+      <detEvento versao="1.00">
+        <descEvento>Cancelamento</descEvento>
+        <nProt>135230009999999</nProt>
+        <xJust>EMISSAO EM DUPLICIDADE POR FALHA NO SISTEMA DE FATURAMENTO</xJust>
+      </detEvento>
+    </infEvento>
+  </evento>
+  <retEvento versao="1.00">
+    <infEvento>
+      <tpAmb>1</tpAmb>
+      <verAplic>SP_EVENTOS_PL_100</verAplic>
+      <cOrgao>35</cOrgao>
+      <cStat>135</cStat>
+      <xMotivo>Evento registrado e vinculado a NF-e</xMotivo>
+      <chNFe>35230998765432000188550010000020021000020020</chNFe>
+      <tpEvento>110111</tpEvento>
+      <xEvento>Cancelamento homologado</xEvento>
+      <nSeqEvento>1</nSeqEvento>
+      <dhRegEvento>2026-10-18T14:21:05-03:00</dhRegEvento>
+      <nProt>135230009999999</nProt>
+    </infEvento>
+  </retEvento>
+</procEventoNFe>
