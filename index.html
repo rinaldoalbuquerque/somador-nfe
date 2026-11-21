@@ -148,6 +148,36 @@
       </div>
     </section>
 
+    <!-- SOMA POR NATUREZA DA OPERAÇÃO -->
+    <section class="natureza-card" id="naturezaSection">
+      <div class="natureza-header">
+        <div>
+          <h3 class="natureza-title">Soma por Natureza da Operação</h3>
+          <div class="natureza-subtitle">Apenas notas incluídas na soma. Clique em uma linha para filtrar a tabela.</div>
+        </div>
+        <div class="natureza-vendas-box">
+          <span class="natureza-vendas-label">Total de Vendas (base para impostos)</span>
+          <strong class="natureza-vendas-valor" id="lblTotalVendas">R$ 0,00</strong>
+          <span class="natureza-vendas-desc" id="lblTotalVendasDesc">0 nota(s) de venda</span>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="natureza-table">
+          <thead>
+            <tr>
+              <th>Natureza da Operação</th>
+              <th>Tipo</th>
+              <th style="text-align: center;">Qtd. Notas</th>
+              <th style="text-align: right;">Valor Total</th>
+            </tr>
+          </thead>
+          <tbody id="naturezaTableBody">
+            <tr><td colspan="4" class="text-center" style="color: var(--text-muted); padding: 1rem;">Nenhuma nota incluída na soma.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- BARRA DE FILTROS E BUSCA -->
     <section class="controls-card">
       <div class="filters-grid">
@@ -174,6 +204,14 @@
             <option value="cancelada">Canceladas</option>
             <option value="duplicada">Duplicadas</option>
             <option value="nao_suportado">Não Suportadas</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterNatureza">Natureza da Operação</label>
+          <select id="filterNatureza" class="form-control">
+            <option value="todas">Todas as Naturezas</option>
+            <option value="__vendas__">Somente Vendas</option>
+            <option value="__outras__">Somente Outras (não venda)</option>
           </select>
         </div>
         <div class="filter-group">
@@ -240,6 +278,7 @@
               <th>Emissão</th>
               <th>Emitente</th>
               <th>CNPJ / CPF</th>
+              <th>Natureza da Operação</th>
               <th>Origem</th>
               <th>Situação Fiscal</th>
               <th style="text-align: right;">Valor Total</th>
@@ -401,6 +440,11 @@
             <div class="filter-group">
               <label for="editDestinatarioNome">Nome / Razão Social do Destinatário</label>
               <input type="text" id="editDestinatarioNome" class="form-control">
+            </div>
+
+            <div class="filter-group">
+              <label for="editNatureza">Natureza da Operação</label>
+              <input type="text" id="editNatureza" class="form-control" placeholder="Ex: VENDA DE MERCADORIA">
             </div>
 
             <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">

@@ -1184,3 +1184,124 @@ input:checked + .toggle-slider:before {
     align-items: flex-start;
   }
 }
+
+/* ==========================================================================
+   Soma por Natureza da Operação
+   ========================================================================== */
+.natureza-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.natureza-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.natureza-title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--primary);
+}
+
+.natureza-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.natureza-vendas-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: var(--success-light);
+  border: 1px solid var(--success);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1rem;
+}
+
+.natureza-vendas-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--success-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.natureza-vendas-valor {
+  font-size: 1.5rem;
+  color: var(--success-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.natureza-vendas-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.natureza-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.natureza-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--border);
+  padding: 0.5rem 0.6rem;
+}
+
+.natureza-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.natureza-table .col-valor {
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.natureza-row {
+  cursor: pointer;
+}
+
+.natureza-row:hover {
+  background-color: var(--primary-light);
+}
+
+.natureza-row.active {
+  background-color: var(--primary-light);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.natureza-row.natureza-outras td:first-child {
+  color: var(--text-muted);
+}
+
+.natureza-total td {
+  font-weight: 700;
+  background-color: #f8fafc;
+}
+
+.natureza-total-venda td {
+  color: var(--success-dark);
+  background-color: var(--success-light);
+}
+
+@media (max-width: 900px) {
+  .natureza-vendas-box {
+    align-items: flex-start;
+    width: 100%;
+  }
+}

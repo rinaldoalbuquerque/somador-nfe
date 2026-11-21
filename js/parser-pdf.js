@@ -253,6 +253,56 @@ const PdfParser = {
   },
 
   /**
+   * Extrai a Natureza da Operação do DANFE.
+   * 1º tenta pela posição espacial (valor logo abaixo do rótulo);
+   * 2º tenta pelo texto corrido (valor logo após o rótulo).
+   */
+  extractNaturezaOperacao(text, items = []) {
+    const isLabel = s => /NATUREZA\s*DA\s*OPERA/i.test(s);
+    const otherLabel = /^(PROTOCOLO|INSCRI|CNPJ|CHAVE|DATA|N[ºO°]|S[EÉ]RIE|FOLHA|DESTINAT|NOME|DANFE)/i;
+    const clean = s => s.replace(/NATUREZA\s*DA\s*OPERA[ÇC][ÃA]O\s*[:\-]?/i, '').trim();
+
+    // 1. Análise espacial
+    if (items && items.length) {
+      const label = items.find(it => isLabel(it.str));
+      if (label) {
+        // Valor na mesma string do rótulo (ex: "NATUREZA DA OPERAÇÃO: VENDA")
+        const inline = clean(label.str);
+        if (inline.length >= 3) return inline.toUpperCase();
+
+        // Valor logo abaixo do rótulo (PDF: y cresce para cima)
+        const below = items
+          .filter(it => it !== label && it.y < label.y && label.y - it.y <= 25 &&
+                        Math.abs(it.x - label.x) <= 60 && !otherLabel.test(it.str) && /[A-Za-z]/.test(it.str))
+          .sort((a, b) => (b.y - a.y) || (a.x - b.x));
+        if (below.length) {
+          const lineY = below[0].y;
+          // Limite direito da coluna: próximo rótulo na mesma linha do rótulo (ex: PROTOCOLO)
+          const nextLabel = items
+            .filter(it => it !== label && Math.abs(it.y - label.y) <= 3 && it.x > label.x + 20)
+            .sort((a, b) => a.x - b.x)[0];
+          const maxX = nextLabel ? nextLabel.x - 5 : label.x + 300;
+          const line = items
+            .filter(it => Math.abs(it.y - lineY) <= 2 && it.x >= label.x - 15 && it.x < maxX && !otherLabel.test(it.str))
+            .sort((a, b) => a.x - b.x);
+          const value = line.map(it => it.str).join(' ').trim();
+          if (value.length >= 3) return value.toUpperCase();
+        }
+      }
+    }
+
+    // 2. Texto corrido
+    if (text) {
+      const m = text.match(/NATUREZA\s*DA\s*OPERA[ÇC][ÃA]O\s*[:\-]?\s*(.{3,80}?)(?=\s+(PROTOCOLO|INSCRI|CNPJ|CHAVE|DATA|DESTINAT)|$)/i);
+      if (m && m[1]) {
+        const value = m[1].trim();
+        if (/[A-Za-z]/.test(value)) return value.toUpperCase();
+      }
+    }
+    return '';
+  },
+
+  /**
    * Extrai campos estruturados do DANFE combinando análise textual e espacial
    */
   extractFields(text, items, originalFileName, displayFileName) {
@@ -353,7 +403,7 @@ const PdfParser = {
       numero,
       serie,
       dhEmi,
-      naturezaOperacao: isDevolucao ? 'DEVOLUÇÃO' : 'VENDA / OPERAÇÃO PADRÃO',
+      naturezaOperacao: this.extractNaturezaOperacao(text, items) || (isDevolucao ? 'DEVOLUÇÃO' : 'NÃO IDENTIFICADA'),
       tpNF: 'Saída',
       isDevolucao,
       emitente: {

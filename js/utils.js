@@ -226,5 +226,28 @@ const Utils = {
    */
   uid() {
     return 'nfe_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 9);
+  },
+
+  /**
+   * Normaliza o texto da Natureza da Operação para agrupamento
+   * (maiúsculas, espaços simples, sem espaços nas pontas).
+   */
+  normalizeNatureza(natOp) {
+    const s = String(natOp || '').replace(/\s+/g, ' ').trim().toUpperCase();
+    return s || 'NÃO IDENTIFICADA';
+  },
+
+  /**
+   * Classifica a Natureza da Operação.
+   * 'venda'  -> operação de venda efetiva (base para apuração de impostos)
+   * 'outras' -> retorno simbólico, remessa, devolução, transferência, bonificação etc.
+   */
+  classificarNatureza(natOp) {
+    const s = this.normalizeNatureza(natOp)
+      .normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (!s.includes('VENDA') && !s.includes('VENDIDA')) return 'outras';
+    const naoVenda = ['RETORNO', 'SIMBOLIC', 'REMESSA', 'DEVOLU', 'ANULA', 'ESTORNO', 'CANCELAMENTO'];
+    if (naoVenda.some(t => s.includes(t))) return 'outras';
+    return 'venda';
   }
 };

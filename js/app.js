@@ -19,7 +19,8 @@ class SomadorApp {
       dataInicio: '',
       dataFim: '',
       situacao: 'todas',
-      origem: 'todas'
+      origem: 'todas',
+      natureza: 'todas'
     };
 
     this.initElements();
@@ -47,6 +48,10 @@ class SomadorApp {
     this.filterDataFim = document.getElementById('filterDataFim');
     this.filterSituacao = document.getElementById('filterSituacao');
     this.filterOrigem = document.getElementById('filterOrigem');
+    this.filterNatureza = document.getElementById('filterNatureza');
+    this.naturezaTableBody = document.getElementById('naturezaTableBody');
+    this.lblTotalVendas = document.getElementById('lblTotalVendas');
+    this.lblTotalVendasDesc = document.getElementById('lblTotalVendasDesc');
     this.btnClearFilters = document.getElementById('btnClearFilters');
 
     // Subtotais
@@ -106,6 +111,7 @@ class SomadorApp {
     this.editEmitenteNome = document.getElementById('editEmitenteNome');
     this.editEmitenteCnpj = document.getElementById('editEmitenteCnpj');
     this.editDestinatarioNome = document.getElementById('editDestinatarioNome');
+    this.editNatureza = document.getElementById('editNatureza');
     this.editIncluirSoma = document.getElementById('editIncluirSoma');
 
     this.modalConfirmClear = document.getElementById('modalConfirmClear');
@@ -182,6 +188,24 @@ class SomadorApp {
       });
     }
 
+    if (this.filterNatureza) {
+      this.filterNatureza.addEventListener('change', (e) => {
+        this.filters.natureza = e.target.value;
+        this.updateUI();
+      });
+    }
+
+    // Clique em uma linha do resumo por natureza aplica o filtro correspondente
+    if (this.naturezaTableBody) {
+      this.naturezaTableBody.addEventListener('click', (e) => {
+        const tr = e.target.closest('tr[data-natureza]');
+        if (!tr) return;
+        const value = tr.getAttribute('data-natureza');
+        this.filters.natureza = this.filters.natureza === value ? 'todas' : value;
+        this.updateUI();
+      });
+    }
+
     if (this.btnClearFilters) {
       this.btnClearFilters.addEventListener('click', () => {
         if (this.filterSearch) this.filterSearch.value = '';
@@ -189,7 +213,8 @@ class SomadorApp {
         if (this.filterDataFim) this.filterDataFim.value = '';
         if (this.filterSituacao) this.filterSituacao.value = 'todas';
         if (this.filterOrigem) this.filterOrigem.value = 'todas';
-        this.filters = { search: '', dataInicio: '', dataFim: '', situacao: 'todas', origem: 'todas' };
+        if (this.filterNatureza) this.filterNatureza.value = 'todas';
+        this.filters = { search: '', dataInicio: '', dataFim: '', situacao: 'todas', origem: 'todas', natureza: 'todas' };
         this.updateUI();
       });
     }
@@ -662,6 +687,18 @@ class SomadorApp {
         if (n.origem !== this.filters.origem) return false;
       }
 
+      // Natureza da Operação
+      if (this.filters.natureza !== 'todas') {
+        const nat = this.filters.natureza;
+        if (nat === '__vendas__') {
+          if (Utils.classificarNatureza(n.naturezaOperacao) !== 'venda') return false;
+        } else if (nat === '__outras__') {
+          if (Utils.classificarNatureza(n.naturezaOperacao) !== 'outras') return false;
+        } else if (Utils.normalizeNatureza(n.naturezaOperacao) !== nat) {
+          return false;
+        }
+      }
+
       return true;
     });
   }
@@ -705,13 +742,16 @@ class SomadorApp {
 
     if (this.lblTotalGeral) this.lblTotalGeral.textContent = `${Utils.centsToBRL(totalGeralCents)} (${qtdIncluidas} notas)`;
 
+    this.renderNaturezaSummary();
+
     // 2. Subtotal Filtrado (Apenas notas visíveis com filtros ativos)
     const hasActiveFilters = Boolean(
       this.filters.search || 
       this.filters.dataInicio || 
       this.filters.dataFim || 
       this.filters.situacao !== 'todas' || 
-      this.filters.origem !== 'todas'
+      this.filters.origem !== 'todas' ||
+      this.filters.natureza !== 'todas'
     );
 
     if (hasActiveFilters) {
@@ -737,6 +777,94 @@ class SomadorApp {
   }
 
   /**
+   * Agrupa as notas incluídas na soma por Natureza da Operação
+   * @returns {{grupos: Array, vendasCents: number, vendasQtd: number}}
+   */
+  getNaturezaSummary(notas = this.notas) {
+    const map = new Map();
+    let vendasCents = 0;
+    let vendasQtd = 0;
+    for (const n of notas) {
+      if (!n.incluidaNaSoma || n.statusLeitura === 'revisao' || n.duplicada || n.isUnsupported) continue;
+      const key = Utils.normalizeNatureza(n.naturezaOperacao);
+      const tipo = Utils.classificarNatureza(key);
+      if (!map.has(key)) map.set(key, { natureza: key, tipo, qtd: 0, cents: 0 });
+      const g = map.get(key);
+      g.qtd++;
+      g.cents += n.valorCents;
+      if (tipo === 'venda') {
+        vendasCents += n.valorCents;
+        vendasQtd++;
+      }
+    }
+    const grupos = [...map.values()].sort((a, b) =>
+      (a.tipo === b.tipo ? 0 : (a.tipo === 'venda' ? -1 : 1)) || (b.cents - a.cents));
+    return { grupos, vendasCents, vendasQtd };
+  }
+
+  /**
+   * Renderiza o painel de soma por Natureza da Operação
+   */
+  renderNaturezaSummary() {
+    const { grupos, vendasCents, vendasQtd } = this.getNaturezaSummary();
+
+    if (this.lblTotalVendas) this.lblTotalVendas.textContent = Utils.centsToBRL(vendasCents);
+    if (this.lblTotalVendasDesc) this.lblTotalVendasDesc.textContent = `${vendasQtd} nota(s) de venda`;
+
+    // Atualiza opções do filtro de natureza preservando a seleção
+    if (this.filterNatureza) {
+      const fixed = `
+        <option value="todas">Todas as Naturezas</option>
+        <option value="__vendas__">Somente Vendas</option>
+        <option value="__outras__">Somente Outras (não venda)</option>`;
+      const naturezas = [...new Set(this.notas.map(n => Utils.normalizeNatureza(n.naturezaOperacao)))].sort();
+      this.filterNatureza.innerHTML = fixed + naturezas
+        .map(nat => `<option value="${Utils.escapeHtml(nat)}">${Utils.escapeHtml(nat)}</option>`).join('');
+      this.filterNatureza.value = this.filters.natureza;
+      if (this.filterNatureza.value !== this.filters.natureza) {
+        this.filters.natureza = 'todas';
+        this.filterNatureza.value = 'todas';
+      }
+    }
+
+    if (!this.naturezaTableBody) return;
+    if (grupos.length === 0) {
+      this.naturezaTableBody.innerHTML = `<tr><td colspan="4" class="text-center" style="color: var(--text-muted); padding: 1rem;">Nenhuma nota incluída na soma.</td></tr>`;
+      return;
+    }
+
+    const outras = grupos.filter(g => g.tipo !== 'venda');
+    const outrasCents = outras.reduce((s, g) => s + g.cents, 0);
+    const outrasQtd = outras.reduce((s, g) => s + g.qtd, 0);
+    const activeCls = v => (this.filters.natureza === v ? ' active' : '');
+
+    this.naturezaTableBody.innerHTML = grupos.map(g => {
+      const badge = g.tipo === 'venda'
+        ? '<span class="badge badge-success">Venda</span>'
+        : (g.natureza === 'NÃO IDENTIFICADA'
+          ? '<span class="badge badge-warning" title="Natureza não encontrada no PDF. Abra a nota em Revisar e informe a natureza.">Verificar</span>'
+          : '<span class="badge badge-neutral">Outras</span>');
+      return `
+        <tr class="natureza-row natureza-${g.tipo}${activeCls(g.natureza)}" data-natureza="${Utils.escapeHtml(g.natureza)}" title="Clique para filtrar a tabela por esta natureza">
+          <td>${Utils.escapeHtml(g.natureza)}</td>
+          <td>${badge}</td>
+          <td style="text-align: center;">${g.qtd}</td>
+          <td class="col-valor">${Utils.centsToBRL(g.cents)}</td>
+        </tr>`;
+    }).join('') + `
+        <tr class="natureza-row natureza-total natureza-total-venda${activeCls('__vendas__')}" data-natureza="__vendas__" title="Clique para filtrar somente vendas">
+          <td colspan="2">Subtotal Vendas</td>
+          <td style="text-align: center;">${vendasQtd}</td>
+          <td class="col-valor">${Utils.centsToBRL(vendasCents)}</td>
+        </tr>
+        <tr class="natureza-row natureza-total${activeCls('__outras__')}" data-natureza="__outras__" title="Clique para filtrar somente outras operações">
+          <td colspan="2">Subtotal Outras Operações</td>
+          <td style="text-align: center;">${outrasQtd}</td>
+          <td class="col-valor">${Utils.centsToBRL(outrasCents)}</td>
+        </tr>`;
+  }
+
+  /**
    * Renderiza a tabela de notas
    */
   renderTable(resetCheckAll = true) {
@@ -755,7 +883,7 @@ class SomadorApp {
     if (filteredNotas.length === 0) {
       this.tableBody.innerHTML = `
         <tr>
-          <td colspan="11" class="text-center" style="padding: 2.5rem; color: var(--text-muted);">
+          <td colspan="12" class="text-center" style="padding: 2.5rem; color: var(--text-muted);">
             Nenhuma nota encontrada com os filtros selecionados.
           </td>
         </tr>
@@ -818,6 +946,9 @@ class SomadorApp {
             ${Utils.escapeHtml((n.emitente?.nome || '-').substring(0, 32))}
           </td>
           <td>${Utils.formatCnpjCpf(n.emitente?.cnpjCpf)}</td>
+          <td title="${Utils.escapeHtml(n.naturezaOperacao || '')}">
+            ${Utils.escapeHtml(Utils.normalizeNatureza(n.naturezaOperacao).substring(0, 30))}
+          </td>
           <td><span class="badge ${badgeOrigemClass}">${n.origem}</span></td>
           <td>${situacaoBadges}</td>
           <td class="col-valor">${Utils.centsToBRL(n.valorCents)}</td>
@@ -950,6 +1081,7 @@ class SomadorApp {
     this.editEmitenteNome.value = nota.emitente?.nome || '';
     this.editEmitenteCnpj.value = Utils.formatCnpjCpf(nota.emitente?.cnpjCpf || '');
     this.editDestinatarioNome.value = nota.destinatario?.nome || '';
+    if (this.editNatureza) this.editNatureza.value = nota.naturezaOperacao || '';
     this.editIncluirSoma.checked = nota.incluidaNaSoma;
 
     // Aviso de conferência
@@ -1039,6 +1171,7 @@ class SomadorApp {
     this.currentReviewNota.emitente.nome = this.editEmitenteNome.value.trim();
     this.currentReviewNota.emitente.cnpjCpf = Utils.cleanChave(this.editEmitenteCnpj.value);
     this.currentReviewNota.destinatario.nome = this.editDestinatarioNome.value.trim();
+    if (this.editNatureza) this.currentReviewNota.naturezaOperacao = this.editNatureza.value.trim().toUpperCase();
     this.currentReviewNota.incluidaNaSoma = this.editIncluirSoma.checked;
 
     // Registra que foi editada manualmente e retira da pendência
@@ -1065,7 +1198,8 @@ class SomadorApp {
       this.filters.dataInicio || 
       this.filters.dataFim || 
       this.filters.situacao !== 'todas' || 
-      this.filters.origem !== 'todas'
+      this.filters.origem !== 'todas' ||
+      this.filters.natureza !== 'todas'
     );
 
     let notasToExport = this.notas;
@@ -1096,7 +1230,8 @@ class SomadorApp {
       this.filters.dataInicio || 
       this.filters.dataFim || 
       this.filters.situacao !== 'todas' || 
-      this.filters.origem !== 'todas'
+      this.filters.origem !== 'todas' ||
+      this.filters.natureza !== 'todas'
     );
 
     let notasToExport = this.notas;
